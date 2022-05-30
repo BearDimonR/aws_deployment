@@ -14,6 +14,20 @@ data "aws_subnets" "all" {
   }
 }
 
+data "aws_ami" "amazon_linux_2" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm*"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+}
 
 ### ECR
 
@@ -52,6 +66,13 @@ module "ec2_sg" {
   ingress_cidr_blocks = ["0.0.0.0/0"]
   ingress_rules       = ["http-80-tcp", "https-443-tcp", "all-icmp"]
   egress_rules        = ["all-all"]
+  egress_with_source_security_group_id = [
+    {
+      description              = "db access"
+      rule                     = "mysql-tcp"
+      source_security_group_id = module.db_sg.security_group_id
+    }
+  ]
 }
 
 resource "aws_iam_role" "ec2_role_sb" {
@@ -106,8 +127,9 @@ EOF
 }
 
 resource "aws_instance" "sb" {
-  ami           = "ami-0eea504f45ef7a8f7"
+  ami           = data.aws_ami.amazon_linux_2.id
   instance_type = "t2.micro"
+  key_name      = "sb_backend_ec2_key"
 
   root_block_device {
     volume_size = 8
@@ -133,10 +155,6 @@ resource "aws_instance" "sb" {
   tags = {
     project = "sb"
   }
-
-  monitoring              = true
-  disable_api_termination = false
-  ebs_optimized           = true
 }
 
 output "instance_id" {
@@ -148,7 +166,6 @@ output "instance_public_ip" {
   description = "Public IP address of the EC2 instance"
   value       = aws_instance.sb.public_ip
 }
-
 
 ### DATABASE
 
@@ -169,7 +186,7 @@ module "db_sg" {
   ingress_with_source_security_group_id = [
     {
       description              = "db access"
-      rule                     = "postgresql-tcp"
+      rule                     = "mysql-tcp"
       source_security_group_id = module.ec2_sg.security_group_id
     }
   ]
@@ -189,10 +206,12 @@ module "db" {
   name                      = "sb_database"
   username                  = "sb_database"
   password                  = random_password.password.result
-  parameter_group_name      = "sbmysql"
   skip_final_snapshot       = true
   port                      = "3306"
   final_snapshot_identifier = "sb_db_postgres"
+
+  family               = "mysql8.0"
+  major_engine_version = "8.0"
 
   maintenance_window = "Mon:00:00-Mon:03:00"
   backup_window      = "03:00-06:00"
@@ -208,7 +227,6 @@ module "db" {
   subnet_ids = data.aws_subnets.all.ids
 
 }
-
 
 output "rds_instance_id" {
   description = "ID of the RDS instance"
