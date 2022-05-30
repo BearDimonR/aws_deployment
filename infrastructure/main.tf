@@ -167,13 +167,22 @@ output "instance_public_ip" {
   value       = aws_instance.sb.public_ip
 }
 
+output "instance_public_dns" {
+  description = "Public HOSTNAME of the EC2 instance"
+  value       = aws_instance.sb.public_dns
+}
+
+output "instance_ssh_key_name" {
+  description = "SSH key name of the EC2 instance"
+  value       = aws_instance.sb.key_name
+}
+
 ### DATABASE
 
 
 resource "random_password" "password" {
-  length           = 16
-  special          = true
-  override_special = "!#$%&*()-_=+[]{}<>:?"
+  length  = 16
+  special = false
 }
 
 module "db_sg" {
@@ -238,8 +247,24 @@ output "rds_instance_public_ip" {
   value       = module.db.this_db_instance_address
 }
 
-output "rds_db_password" {
-  value       = module.db.this_db_instance_password
+output "rds_db_username" {
+  value       = module.db.this_db_instance_username
   description = "The password for RDS"
   sensitive   = true
+}
+
+output "rds_db_password" {
+  value       = module.db.this_db_instance_password
+  description = "The username for RDS"
+  sensitive   = true
+}
+
+output "rds_db_port" {
+  value       = module.db.this_db_instance_port
+  description = "The port for RDS"
+}
+
+output "rds_dns" {
+  description = "Public RDS instance endpoint"
+  value       = module.db.this_db_instance_endpoint
 }

@@ -1,0 +1,11 @@
+[Unit]
+Description=Gunicorn instance for a sbtree backend
+After=network.target
+[Service]
+User=ec2-user
+Group=www-data
+WorkingDirectory=/home/ec2-user/sbtree_test
+ExecStart=/home/ec2-user/sbtree_test/venv/bin/gunicorn -b localhost:8000 app:app
+Restart=always
+[Install]
+WantedBy=multi-user.target
