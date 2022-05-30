@@ -10,7 +10,7 @@ ssh -tt -i $EC2_KEY_NAME_WITH_EXTENSION ec2-user@$EC2_HOST << "ENDSSH"
 sudo yum install git -y
 git clone "https://github.com/BearDimonR/sbtree_test.git"
 
-mv .env /home/ec2-user/sbtree_test
+mv .env /home/ec2-user/sbtree_test/app
 
 cd sbtree_test
 git pull
