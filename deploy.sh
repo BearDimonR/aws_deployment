@@ -15,19 +15,21 @@ mv .env /home/ec2-user/sbtree_test
 cd sbtree_test
 git pull
 
+cd app
+
 python3 -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
+pip3 install -r requirements.txt
+
+cd ..
 
 sudo cp backend.service /etc/systemd/system/backend.service
 sudo systemctl daemon-reload
 sudo systemctl start backend
 sudo systemctl enable backend
 
-sudo apt-get nginx
-sudo unlink /etc/nginx/sites-enabled/default
-sudo cp nginx_ec2.conf /etc/nginx/sites-available/nginx_ec2.conf
-ln -s /etc/nginx/sites-available/reverse-nginx_ec2.conf /etc/nginx/sites-enabled/nginx_ec2.conf
+sudo amazon-linux-extras install nginx1 -y
+sudo cp nginx_ec2.conf  /etc/nginx/nginx.conf
 sudo systemctl start nginx
 sudo systemctl enable nginx
 
