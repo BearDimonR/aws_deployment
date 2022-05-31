@@ -5,8 +5,8 @@
 EC2_KEY_NAME_WITH_EXTENSION="${EC2_KEY_NAME}.pem"
 
 chmod 400 $EC2_KEY_NAME_WITH_EXTENSION
-scp -i $EC2_KEY_NAME_WITH_EXTENSION .env ec2-user@$EC2_HOST:/home/ec2-user/
-ssh -tt -i $EC2_KEY_NAME_WITH_EXTENSION ec2-user@$EC2_HOST << "ENDSSH"
+scp -i $EC2_KEY_NAME_WITH_EXTENSION .env ec2-user@$EC2_PUBLIC_IP:/home/ec2-user/
+ssh -tt -i $EC2_KEY_NAME_WITH_EXTENSION ec2-user@$EC2_PUBLIC_IP << "ENDSSH"
 sudo yum install git -y
 git clone "https://github.com/BearDimonR/sbtree_test.git"
 
