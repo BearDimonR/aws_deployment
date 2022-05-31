@@ -42,7 +42,7 @@ sudo yum-config-manager --enable epel*
 sudo yum install -y certbot 
 sudo yum install -y python-certbot-nginx
 
-sudo certbot certonly --standalone --debug -d sbtree.ml --non-interactive --agree-tos -m webmaster@example.com
+sudo certbot certonly --noninteractive --agree-tos --standalone --debug -d sbtree.ml -m webmaster@example.com
 
 sudo cp nginx_ec2.conf  /etc/nginx/nginx.conf
 sudo systemctl restart nginx
