@@ -3,6 +3,11 @@ provider "aws" {
   region = "us-east-2"
 }
 
+variable "hostname" {
+  type = string
+  default = "sbtree.ml"
+}
+
 data "aws_vpc" "sb_vpc" {
   default = true
 }
@@ -157,6 +162,17 @@ resource "aws_instance" "sb" {
   }
 }
 
+# resource block for eip #
+resource "aws_eip" "ec2_eip" {
+  vpc      = true
+}
+
+# resource block for ec2 and eip association #
+resource "aws_eip_association" "eip_assoc" {
+  instance_id   = aws_instance.sb.id
+  allocation_id = aws_eip.ec2_eip.id
+}
+
 output "instance_id" {
   description = "ID of the EC2 instance"
   value       = aws_instance.sb.id
@@ -165,6 +181,11 @@ output "instance_id" {
 output "instance_public_ip" {
   description = "Public IP address of the EC2 instance"
   value       = aws_instance.sb.public_ip
+}
+
+output "elastic_public_ip" {
+  description = "Elastic public IP address of the EC2 instance"
+  value       = aws_eip_association.eip_assoc.public_ip
 }
 
 output "instance_public_dns" {
@@ -267,4 +288,31 @@ output "rds_db_port" {
 output "rds_dns" {
   description = "Public RDS instance endpoint"
   value       = module.db.this_db_instance_endpoint
+}
+
+
+### HOST
+resource "aws_route53_zone" "host" {
+  name = var.hostname
+}
+
+resource "aws_route53_record" "redirect_ec2" {
+  zone_id = aws_route53_zone.host.zone_id
+  name    = var.hostname
+  type    = "A"
+  ttl     = "300"
+  records = [ aws_eip_association.eip_assoc.public_ip ]
+}
+
+resource "aws_route53_record" "www_redirect_ec2" {
+  zone_id = aws_route53_zone.host.zone_id
+  name    = "www"
+  type    = "A"
+  ttl     = "300"
+  records = [ aws_eip_association.eip_assoc.public_ip ]
+}
+
+output "name_servers" {
+  value       = aws_route53_zone.host.name_servers
+  description = "The nameservers for our domain"
 }

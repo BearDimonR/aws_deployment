@@ -10,15 +10,13 @@ ssh -tt -i $EC2_KEY_NAME_WITH_EXTENSION ec2-user@$EC2_HOST << "ENDSSH"
 sudo yum install git -y
 git clone "https://github.com/BearDimonR/sbtree_test.git"
 
-set -o allexport
-source .env
-set +o allexport
-
 mv .env /home/ec2-user/sbtree_test
 
 cd sbtree_test
 
 git pull
+
+chmod +x backend.sh
 
 cd app
 
@@ -26,7 +24,6 @@ python3 -m venv venv
 source venv/bin/activate
 pip3 install -r requirements.txt
 
-cd ..
 cd ..
 
 sudo cp backend.service /etc/systemd/system/backend.service
