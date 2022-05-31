@@ -3,9 +3,9 @@ Description=Gunicorn instance for a sbtree backend
 After=network.target
 [Service]
 User=ec2-user
-Group=www-data
+Group=ec2-user
 WorkingDirectory=/home/ec2-user/sbtree_test
-ExecStart=/home/ec2-user/sbtree_test/backend.sh
+ExecStart=/bin/bash /home/ec2-user/sbtree_test/backend.sh
 Restart=always
 [Install]
 WantedBy=multi-user.target
