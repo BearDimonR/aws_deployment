@@ -5,7 +5,7 @@ After=network.target
 User=ec2-user
 Group=www-data
 WorkingDirectory=/home/ec2-user/sbtree_test
-ExecStart=/bin/bash /home/ec2-user/sbtree_test/backend.sh
+ExecStart=/home/ec2-user/sbtree_test/backend.sh
 Restart=always
 [Install]
 WantedBy=multi-user.target
