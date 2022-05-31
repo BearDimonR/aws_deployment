@@ -32,9 +32,20 @@ sudo systemctl start backend
 sudo systemctl enable backend
 
 sudo amazon-linux-extras install nginx1 -y
-sudo cp nginx_ec2.conf  /etc/nginx/nginx.conf
 sudo systemctl start nginx
 sudo systemctl enable nginx
+sudo systemctl stop nginx
+
+sudo wget -r --no-parent -A 'epel-release-*.rpm' https://dl.fedoraproject.org/pub/epel/7/x86_64/Packages/e/
+sudo rpm -Uvh dl.fedoraproject.org/pub/epel/7/x86_64/Packages/e/epel-release-*.rpm
+sudo yum-config-manager --enable epel*
+sudo yum install -y certbot 
+sudo yum install -y python-certbot-nginx
+
+sudo certbot certonly --standalone --debug -d sbtree.ml
+
+sudo cp nginx_ec2.conf  /etc/nginx/nginx.conf
+sudo systemctl restart nginx
 
 exit
 
