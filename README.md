@@ -25,7 +25,7 @@ Repository for AWS deployment with domain name and SSL
 
 5. Download them as `.csv` file and open file.
 
-6. Get AccessKeyId and SecretAccessKey from this file (splited by commas)
+6. Get `AccessKeyId` and `SecretAccessKey` from this file (splited by commas)
 
 7. Open terminal and run `aws configure`
 
@@ -92,12 +92,12 @@ Repository for AWS deployment with domain name and SSL
 
 1. Create `.env` file and copy content from `.infrastructure_output`
 
-2. Add variables DOMAIN_NAME (which you created before) and DOMAIN_EMAIL (which will be used by certbot for maintenance), so the keys of `.env` is equal to the `.env.example`
+2. Add variables `DOMAIN_NAME` (which you created before) and `DOMAIN_EMAIL` (which will be used by certbot for maintenance), so the keys of `.env` is equal to the `.env.example`
 
-3. Be sure that you can access your ec2 instance with the DOMAIN_NAME
+3. Be sure that you can access your ec2 instance with the domain
 
 2. Open terminal in root project folder.
 
 3. Run `deploy.sh`
 
-4. Access it with your DOMAIN_NAME, you should see text message.
+4. Access it with your domain, you should see text message.
