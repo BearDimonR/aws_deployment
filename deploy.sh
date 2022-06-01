@@ -15,6 +15,8 @@ ssh -tt -i $EC2_KEY_NAME_WITH_EXTENSION ec2-user@$EC2_PUBLIC_IP << "ENDSSH"
 # install git
 sudo yum install git -y
 
+set -a
+
 # clone current repo into ec2
 git clone "https://github.com/BearDimonR/sbtree_test.git"
 
@@ -63,9 +65,12 @@ sudo yum install -y python-certbot-nginx
 sudo certbot certonly --noninteractive --agree-tos --standalone --debug -d $DOMAIN_NAME -m $DOMAIN_EMAIL
 
 # create nginx.conf from template replacing the DOMAIN_NAME with actual and restart nginx
-sudo bash -c "sudo envsubst '$DOMAIN_NAME' < /home/ec2-user/sbtree_test/nginx_ec2.conf.template > /etc/nginx/nginx.conf"
+envsubst '${DOMAIN_NAME}' < nginx_ec2.conf.template > nginx_ec2.conf
+sudo cp nginx_ec2.conf  /etc/nginx/nginx.conf
 
 sudo systemctl restart nginx
+
+set +a
 
 exit
 
