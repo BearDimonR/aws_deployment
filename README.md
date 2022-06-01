@@ -97,3 +97,5 @@ Repository for AWS deployment with domain name and SSL
 2. Open terminal in root project folder.
 
 3. Run `deploy.sh`
+
+4. Access it with your DOMAIN_NAME, you should see text message.

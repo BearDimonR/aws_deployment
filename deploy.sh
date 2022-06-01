@@ -63,7 +63,7 @@ sudo yum install -y python-certbot-nginx
 sudo certbot certonly --noninteractive --agree-tos --standalone --debug -d $DOMAIN_NAME -m $DOMAIN_EMAIL
 
 # create nginx.conf from template replacing the DOMAIN_NAME with actual and restart nginx
-envsubst '${DOMAIN_NAME}' < nginx_ec2.conf.template > /etc/nginx/nginx.conf
+sudo bash -c "sudo envsubst '$DOMAIN_NAME' < /home/ec2-user/sbtree_test/nginx_ec2.conf.template > /etc/nginx/nginx.conf"
 
 sudo systemctl restart nginx
 
