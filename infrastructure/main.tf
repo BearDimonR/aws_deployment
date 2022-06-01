@@ -8,14 +8,34 @@ variable "hostname" {
   default = "sbtree.ml"
 }
 
-data "aws_vpc" "sb_vpc" {
+variable "key_name" {
+  type = string
+  default = "key_name"
+}
+
+variable "project" {
+  type = string
+  default = "terraform_project"
+}
+
+variable "rds_name_username" {
+  type = string
+  default = "mysql_database"
+}
+
+variable "rds_identifier" {
+  type = string
+  default = "sbdb"
+}
+
+data "aws_vpc" "project_vpc" {
   default = true
 }
 
 data "aws_subnets" "all" {
   filter {
     name   = "vpc-id"
-    values = [data.aws_vpc.sb_vpc.id]
+    values = [data.aws_vpc.project_vpc.id]
   }
 }
 
@@ -34,31 +54,21 @@ data "aws_ami" "amazon_linux_2" {
   }
 }
 
-### ECR
-
-
-resource "aws_ecr_repository" "sb_repo" {
-  name                 = "sb_repo"
-  image_tag_mutability = "MUTABLE"
-
-  tags = {
-    project = "sb"
-  }
-}
-
-
 ### EC2
-
 
 module "dev_ssh_sg" {
   source = "terraform-aws-modules/security-group/aws"
 
   name        = "ec2_sg"
   description = "Security group for ec2_sg"
-  vpc_id      = data.aws_vpc.sb_vpc.id
+  vpc_id      = data.aws_vpc.project_vpc.id
 
   ingress_cidr_blocks = ["0.0.0.0/0"]
   ingress_rules       = ["ssh-tcp"]
+
+  tags = {
+    project = var.project
+  }
 }
 
 module "ec2_sg" {
@@ -66,7 +76,7 @@ module "ec2_sg" {
 
   name        = "ec2_sg"
   description = "Security group for ec2_sg"
-  vpc_id      = data.aws_vpc.sb_vpc.id
+  vpc_id      = data.aws_vpc.project_vpc.id
 
   ingress_cidr_blocks = ["0.0.0.0/0"]
   ingress_rules       = ["http-80-tcp", "https-443-tcp", "all-icmp"]
@@ -78,10 +88,14 @@ module "ec2_sg" {
       source_security_group_id = module.db_sg.security_group_id
     }
   ]
+
+  tags = {
+    project = var.project
+  }
 }
 
-resource "aws_iam_role" "ec2_role_sb" {
-  name = "ec2_role_sb"
+resource "aws_iam_role" "ec2_role" {
+  name = "ec2_role"
 
   assume_role_policy = <<EOF
 {
@@ -100,18 +114,22 @@ resource "aws_iam_role" "ec2_role_sb" {
 EOF
 
   tags = {
-    project = "sb"
+    project = var.project
   }
 }
 
-resource "aws_iam_instance_profile" "ec2_profile_sb" {
-  name = "ec2_profile_sb"
-  role = aws_iam_role.ec2_role_sb.name
+resource "aws_iam_instance_profile" "ec2_profile" {
+  name = "ec2_profile"
+  role = aws_iam_role.ec2_role.name
+
+  tags = {
+    project = var.project
+  }
 }
 
-resource "aws_iam_role_policy" "ec2_policy_sb" {
-  name = "ec2_policy_sb"
-  role = aws_iam_role.ec2_role_sb.id
+resource "aws_iam_role_policy" "ec2_policy" {
+  name = "ec2_policy"
+  role = aws_iam_role.ec2_role.id
 
   policy = <<EOF
 {
@@ -131,10 +149,10 @@ resource "aws_iam_role_policy" "ec2_policy_sb" {
 EOF
 }
 
-resource "aws_instance" "sb" {
+resource "aws_instance" "ec2_instance" {
   ami           = data.aws_ami.amazon_linux_2.id
   instance_type = "t2.micro"
-  key_name      = "sb_backend_ec2_key"
+  key_name      = var.key_name
 
   root_block_device {
     volume_size = 8
@@ -144,21 +162,16 @@ resource "aws_instance" "sb" {
     #!/bin/bash
     set -ex
     sudo yum update -y
-    sudo amazon-linux-extras install docker -y
-    sudo service docker start
-    sudo usermod -a -G docker ec2-user
-    sudo curl -L https://github.com/docker/compose/releases/download/1.25.4/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
   EOF
 
   vpc_security_group_ids = [
     module.ec2_sg.security_group_id,
     module.dev_ssh_sg.security_group_id
   ]
-  iam_instance_profile = aws_iam_instance_profile.ec2_profile_sb.name
+  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
 
   tags = {
-    project = "sb"
+    project = var.project
   }
 }
 
@@ -169,18 +182,8 @@ resource "aws_eip" "ec2_eip" {
 
 # resource block for ec2 and eip association #
 resource "aws_eip_association" "eip_assoc" {
-  instance_id   = aws_instance.sb.id
+  instance_id   = aws_instance.ec2_instance.id
   allocation_id = aws_eip.ec2_eip.id
-}
-
-output "instance_id" {
-  description = "ID of the EC2 instance"
-  value       = aws_instance.sb.id
-}
-
-output "instance_public_ip" {
-  description = "Public IP address of the EC2 instance"
-  value       = aws_instance.sb.public_ip
 }
 
 output "elastic_public_ip" {
@@ -188,14 +191,9 @@ output "elastic_public_ip" {
   value       = aws_eip_association.eip_assoc.public_ip
 }
 
-output "instance_public_dns" {
-  description = "Public HOSTNAME of the EC2 instance"
-  value       = aws_instance.sb.public_dns
-}
-
 output "instance_ssh_key_name" {
   description = "SSH key name of the EC2 instance"
-  value       = aws_instance.sb.key_name
+  value       = aws_instance.ec2_instance.key_name
 }
 
 ### DATABASE
@@ -211,7 +209,7 @@ module "db_sg" {
 
   name        = "db_sg"
   description = "Security group for db_sg"
-  vpc_id      = data.aws_vpc.sb_vpc.id
+  vpc_id      = data.aws_vpc.project_vpc.id
 
   ingress_with_source_security_group_id = [
     {
@@ -221,24 +219,28 @@ module "db_sg" {
     }
   ]
   egress_rules = ["all-all"]
+
+  tags = {
+    project = var.project
+  }
 }
 
 module "db" {
   source  = "terraform-aws-modules/rds/aws"
   version = "~> 2.0"
 
-  identifier = "sbdb"
+  identifier = var.rds_identifier
 
   allocated_storage         = 15
   engine                    = "mysql"
   engine_version            = "8.0.28"
   instance_class            = "db.t3.micro"
-  name                      = "sb_database"
-  username                  = "sb_database"
+  name                      = var.rds_name_username
+  username                  = var.rds_name_username
   password                  = random_password.password.result
   skip_final_snapshot       = true
   port                      = "3306"
-  final_snapshot_identifier = "sb_db_postgres"
+  final_snapshot_identifier = var.rds_name_username
 
   family               = "mysql8.0"
   major_engine_version = "8.0"
@@ -251,16 +253,11 @@ module "db" {
   vpc_security_group_ids = [module.db_sg.security_group_id]
 
   tags = {
-    project = "sb"
+    project = var.project
   }
 
   subnet_ids = data.aws_subnets.all.ids
 
-}
-
-output "rds_instance_id" {
-  description = "ID of the RDS instance"
-  value       = module.db.this_db_instance_id
 }
 
 output "rds_instance_public_ip" {
@@ -285,15 +282,15 @@ output "rds_db_port" {
   description = "The port for RDS"
 }
 
-output "rds_dns" {
-  description = "Public RDS instance endpoint"
-  value       = module.db.this_db_instance_endpoint
-}
-
 
 ### HOST
+
 resource "aws_route53_zone" "host" {
   name = var.hostname
+
+  tags = {
+    project = var.project
+  }
 }
 
 resource "aws_route53_record" "redirect_ec2" {

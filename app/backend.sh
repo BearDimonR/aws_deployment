@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. .env
+. ../.env
 
 export MYSQL_USER=$MYSQL_USER
 export MYSQL_PASSWORD=$MYSQL_PASSWORD

@@ -13,10 +13,10 @@ http {
     server {
             listen       443 ssl http2;
             listen       [::]:443 ssl http2;
-            server_name  sbtree.ml;
+            server_name  ${DOMAIN_NAME};
 
-            ssl_certificate "/etc/letsencrypt/live/sbtree.ml/fullchain.pem";
-            ssl_certificate_key "/etc/letsencrypt/live/sbtree.ml/privkey.pem";
+            ssl_certificate "/etc/letsencrypt/live/${DOMAIN_NAME}/fullchain.pem";
+            ssl_certificate_key "/etc/letsencrypt/live/${DOMAIN_NAME}/privkey.pem";
             ssl_protocols TLSv1.2 TLSv1.3;
             ssl_ciphers ECDH+AESGCM:ECDH+AES256:ECDH+AES128:DH+3DES:!ADH:!AECDH:!MD5;
 

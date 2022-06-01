@@ -17,3 +17,4 @@ venv
 .DS_Store
 *.pem
 .name_servers
+.infrastructure_output
