@@ -29,7 +29,7 @@ Repository for AWS deployment with domain name and SSL
 
 7. Open terminal and run `aws configure`
 
-8. Paste AccessKeyId, enter. Paste SecretAccessKey, enter. Default region: `us-east-2`, enter. Default output: `text`, enter.
+8. Paste `AccessKeyId`, `SecretAccessKey`. Default region: `us-east-2`, enter. Default output: `text`, enter.
 
 9. Delete `.csv` file for security
 
