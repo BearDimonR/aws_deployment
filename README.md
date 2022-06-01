@@ -86,6 +86,8 @@ Repository for AWS deployment with domain name and SSL
 
 6. Also, check `.nameservers` file. Here you will see nameservers, which can be used to fill in nameservers for your domain.
 
+7. To destroy created infrastructure run `terraform destroy`
+
 #### Deploying project (Optionally)
 
 1. Create `.env` file and copy content from `.infrastructure_output`
