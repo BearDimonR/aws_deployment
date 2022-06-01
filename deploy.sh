@@ -18,15 +18,15 @@ sudo yum install git -y
 set -a
 
 # clone current repo into ec2
-git clone "https://github.com/BearDimonR/sbtree_test.git"
+git clone "https://github.com/BearDimonR/aws_deployment.git"
 
 # import .env
 . .env
 
 # move .env file to the project root
-mv .env /home/ec2-user/sbtree_test
+mv .env /home/ec2-user/aws_deployment
 
-cd sbtree_test
+cd aws_deployment
 
 # pull changes if they exist
 git pull

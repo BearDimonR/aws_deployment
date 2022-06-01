@@ -5,7 +5,7 @@ provider "aws" {
 
 variable "hostname" {
   type = string
-  default = "sbtree.ml"
+  default = "host.ml"
 }
 
 variable "key_name" {
@@ -25,7 +25,7 @@ variable "rds_name_username" {
 
 variable "rds_identifier" {
   type = string
-  default = "sbdb"
+  default = "awsdb"
 }
 
 data "aws_vpc" "project_vpc" {

@@ -4,8 +4,8 @@ After=network.target
 [Service]
 User=ec2-user
 Group=ec2-user
-WorkingDirectory=/home/ec2-user/sbtree_test/app
-ExecStart=/bin/bash /home/ec2-user/sbtree_test/app/backend.sh
+WorkingDirectory=/home/ec2-user/aws_deployment/app
+ExecStart=/bin/bash /home/ec2-user/aws_deployment/app/backend.sh
 Restart=always
 [Install]
 WantedBy=multi-user.target
